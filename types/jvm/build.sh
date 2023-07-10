@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+CURDIR=$(cd `dirname $BASH_SOURCE` && pwd)
+
 JDK=${JDK:-"17.0.7-tem"}
 GIT_TAG=${GIT_TAG:=$(git tag -l --contains HEAD)}
 GIT_BRANCH=${GIT_BRANCH:=$(git rev-parse --abbrev-ref HEAD)}
@@ -16,9 +18,9 @@ DOCKER_COMPOSE_WAIT_COMMAND=${DOCKER_COMPOSE_WAIT_COMMAND:-""}
 
 print_values() {
   echo ""
-  echo "Git ref: ${GIT_REF}"
-  echo "Using JDK: ${JDK}"
-  echo "Docker image: ${DOCKER_FULL}"
+  echo "Git referece used: ${GIT_REF}"
+  echo "JDK used: ${JDK}"
+  echo "Docker final image: ${DOCKER_FULL}"
   echo ""
 }
 
