@@ -10,7 +10,7 @@ GIT_REF=${GIT_TAG:=$GIT_BRANCH}
 GIT_REF=${GIT_REF:=$GIT_COMMIT}
 DOCKER_REPO=${DOCKER_REPO:-"default"}
 DOCKER_IMAGE=${DOCKER_IMAGE:-"$(basename `git rev-parse --show-toplevel`)"}
-DOCKER_TAG=$(echo $GIT_REF | sed 's/[^a-zA-Z0-9]/-/g')
+DOCKER_TAG=${GIT_REF//[^a-zA-Z0-9]/-}
 DOCKER_FULL=${DOCKER_REPO}/${DOCKER_IMAGE}:${DOCKER_TAG}
 DOCKER_FILE=${DOCKER_FILE:-"Dockerfile"}
 DOCKER_COMPOSE_FILE=${DOCKER_COMPOSE_FILE:-"docker-compose.yml"}
