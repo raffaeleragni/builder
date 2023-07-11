@@ -8,10 +8,14 @@ GIT_BRANCH=${GIT_BRANCH:=$(git rev-parse --abbrev-ref HEAD)}
 GIT_COMMIT=$(git rev-parse HEAD)
 GIT_REF=${GIT_TAG:=$GIT_BRANCH}
 GIT_REF=${GIT_REF:=$GIT_COMMIT}
-DOCKER_REPO=${DOCKER_REPO:-"default"}
+DOCKER_REPO=${DOCKER_REPO:-""}
 DOCKER_IMAGE=${DOCKER_IMAGE:-"$(basename `git rev-parse --show-toplevel`)"}
 DOCKER_TAG=${GIT_REF//[^a-zA-Z0-9]/-}
-DOCKER_FULL=${DOCKER_REPO}/${DOCKER_IMAGE}:${DOCKER_TAG}
+if [ -z "$DOCKER_REPO" ]; then
+  DOCKER_FULL=${DOCKER_IMAGE}:${DOCKER_TAG}
+else
+  DOCKER_FULL=${DOCKER_REPO}/${DOCKER_IMAGE}:${DOCKER_TAG}
+fi
 DOCKER_FILE=${DOCKER_FILE:-"Dockerfile"}
 DOCKER_COMPOSE_FILE=${DOCKER_COMPOSE_FILE:-"docker-compose.yml"}
 DOCKER_COMPOSE_WAIT_COMMAND=${DOCKER_COMPOSE_WAIT_COMMAND:-""}
@@ -53,7 +57,6 @@ build() {
     while ! docker compose pull; do sleep .1; done
     docker compose up -d
     ${DOCKER_COMPOSE_WAIT_COMMAND}
-    #until docker compose exec -T db psql -U postgres -c "select 1" -d postgres; do sleep 1; done
   fi
 
   make_artifact
@@ -69,9 +72,17 @@ docker_build() {
   fi
 }
 
+docker_login() {
+  HUB=${DOCKER_REPO:-hub.docker.com}
+  RES=$(cat ~/.docker/config.json | grep '${HUB}')
+  if [ -z "$RES" ]; then
+    docker login -u ${DOCKER_REPO_USER} -p ${DOCKER_REPO_PASS} ${DOCKER_REPO}
+  fi
+}
+
 docker_push() {
   docker inspect $DOCKER_FULL > /dev/null 2>&1 || return
-  docker login
+  docker_login
   docker push $DOCKER_FULL
 }
 
@@ -79,6 +90,7 @@ print_values
 install_sdk
 build
 docker_build
+docker_push
 print_values
 
 exit 0
