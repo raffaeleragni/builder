@@ -1,21 +1,15 @@
 #!/usr/bin/env bash
 
-CURDIR=$(cd `dirname $BASH_SOURCE` && pwd)
-
 JDK=${JDK:-"17.0.7-tem"}
 GIT_TAG=${GIT_TAG:=$(git tag -l --contains HEAD)}
 GIT_BRANCH=${GIT_BRANCH:=$(git rev-parse --abbrev-ref HEAD)}
 GIT_COMMIT=$(git rev-parse HEAD)
 GIT_REF=${GIT_TAG:=$GIT_BRANCH}
 GIT_REF=${GIT_REF:=$GIT_COMMIT}
-DOCKER_REPO=${DOCKER_REPO:-""}
+DOCKER_REPO=${DOCKER_REPO:-hub.docker.com}
 DOCKER_IMAGE=${DOCKER_IMAGE:-"$(basename `git rev-parse --show-toplevel`)"}
 DOCKER_TAG=${GIT_REF//[^a-zA-Z0-9]/-}
-if [ -z "$DOCKER_REPO" ]; then
-  DOCKER_FULL=${DOCKER_IMAGE}:${DOCKER_TAG}
-else
-  DOCKER_FULL=${DOCKER_REPO}/${DOCKER_IMAGE}:${DOCKER_TAG}
-fi
+DOCKER_FULL=${DOCKER_REPO}/${DOCKER_IMAGE}:${DOCKER_TAG}
 DOCKER_FILE=${DOCKER_FILE:-"Dockerfile"}
 DOCKER_COMPOSE_FILE=${DOCKER_COMPOSE_FILE:-"docker-compose.yml"}
 DOCKER_COMPOSE_WAIT_COMMAND=${DOCKER_COMPOSE_WAIT_COMMAND:-""}
@@ -72,10 +66,13 @@ docker_build() {
   fi
 }
 
+docker_logged_in() {
+  return $(cat ~/.docker/config.json | grep '${DOCKER_REPO}')
+}
+
 docker_login() {
-  HUB=${DOCKER_REPO:-hub.docker.com}
-  RES=$(cat ~/.docker/config.json | grep '${HUB}')
-  if [ -z "$RES" ]; then
+  RES=$(docker_logged_in)
+  if [ -z "$RES" ] && [ ! -z "${DOCKER_REPO_USER}" ] && [ ! -z "${DOCKER_REPO_PASS}" ]; then
     docker login -u ${DOCKER_REPO_USER} -p ${DOCKER_REPO_PASS} ${DOCKER_REPO}
   fi
 }
@@ -83,7 +80,10 @@ docker_login() {
 docker_push() {
   docker inspect $DOCKER_FULL > /dev/null 2>&1 || return
   docker_login
-  docker push $DOCKER_FULL
+  RES=$(docker_logged_in)
+  if [ ! -z "$RES" ]; then
+    docker push $DOCKER_FULL
+  fi
 }
 
 print_values
