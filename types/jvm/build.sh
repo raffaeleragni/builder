@@ -13,6 +13,8 @@ DOCKER_FULL=${DOCKER_REPO}/${DOCKER_IMAGE}:${DOCKER_TAG}
 DOCKER_FILE=${DOCKER_FILE:-"Dockerfile"}
 DOCKER_COMPOSE_FILE=${DOCKER_COMPOSE_FILE:-"docker-compose.yml"}
 DOCKER_COMPOSE_WAIT_COMMAND=${DOCKER_COMPOSE_WAIT_COMMAND:-""}
+MAVEN_TASKS=${MAVEN_TASKS:-"clean package"}
+GRADLE_TASKS=${GRADLE_TASKS:-"build"}
 
 print_values() {
   echo ""
@@ -33,15 +35,15 @@ install_sdk() {
 
 make_artifact() {
   if [ -f mvnw ]; then
-    ./mvnw clean package
+    ./mvnw ${MAVEN_TASKS}
   elif [ -f pom.xml ]; then
     sdk install maven
-    mvn package  
+    mvn ${MAVEN_TASKS}  
   elif [ -f gradlew ]; then
-    ./gradlew build
+    ./gradlew ${GRADLE_TASKS}
   elif [ -f build.gradle ] || [ -f build.gradle.kts ]; then
     sdk install gradle
-    gradle build
+    gradle ${GRADLE_TASKS}
   fi 
 }
 
