@@ -92,7 +92,9 @@ print_values
 install_sdk
 build
 docker_build
-docker_push
+if [ "$1" == "push" ]; then
+  docker_push
+fi
 print_values
 
 exit 0
