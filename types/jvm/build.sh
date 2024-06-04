@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-JDK=${JDK:-"17.0.7-tem"}
+JDK=${JDK:-"21-tem"}
 GIT_TAG=${GIT_TAG:=$(git tag -l --contains HEAD)}
 GIT_BRANCH=${GIT_BRANCH:=$(git rev-parse --abbrev-ref HEAD)}
 GIT_COMMIT=$(git rev-parse HEAD)
