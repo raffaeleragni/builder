@@ -69,7 +69,7 @@ docker_build() {
 }
 
 docker_logged_in() {
-  return $(cat ~/.docker/config.json | grep '${DOCKER_REPO}')
+  echo $(cat ~/.docker/config.json | grep "${DOCKER_REPO}")
 }
 
 docker_login() {
